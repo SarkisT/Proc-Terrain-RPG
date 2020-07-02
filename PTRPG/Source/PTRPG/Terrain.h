@@ -41,6 +41,8 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Biome")
 	int biome;
 
+	UPROPERTY(EditAnywhere, Category = "WaterLevel")
+		TSubclassOf<AActor> WaterCollider;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Instance")
 		UInstancedStaticMeshComponent* CubeInstance;
@@ -59,8 +61,16 @@ public:
 	int offSetZoom;
 
 	float perlinVAL;
-	float f1;
-	float f2;
+	float waterLevel;
+
+	int cubeCount;
+	int sandCount;
+	int sandCount2;
+	int grassCount;
+	int stoneCount;
+	int snowCount;
+
+
 	FVector ActorVect;
 
 	UMaterialInterface* SandMat;
