@@ -12,27 +12,37 @@ ATerrainChunk::ATerrainChunk()
 
 	Grass = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Grass"));
 	Grass->SetupAttachment(RootComponent);
+	Grass->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
 	//Grass->RegisterComponent();
 
 
 	Sand = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Sand"));
 	Sand->SetupAttachment(Grass);
+	Sand->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
 	//Sand->RegisterComponent();
 
 	Sand2 = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Sand2"));
 	Sand2->SetupAttachment(Sand);
+	Sand2->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
+
 	//Sand2->RegisterComponent();
 
 	Stone = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Stone"));
 	Stone->SetupAttachment(Sand2);
+	Stone->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
+
 	//Stone->RegisterComponent();
 
 	Snow = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Snow"));
 	Snow->SetupAttachment(Stone);
+	Snow->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
+
 	//Snow->RegisterComponent();
 
 	Water = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Water"));
 	Water->SetupAttachment(Snow);
+	Water->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
+
 	//Water->RegisterComponent();
 	
 }
@@ -159,6 +169,8 @@ void ATerrainChunk::BeginPlay()
 					//Spawning location for our tile.
 					FVector TileLocation = FVector(InitChunk.X + (i * Distance), InitChunk.Y + (j * Distance), InitChunk.Z + (k * Distance));
 
+					//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Purple, FString::Printf(TEXT("GOOD BYE CHUNK")));
+
 					//CubeLocations.Add(TileLocation);
 
 
@@ -202,19 +214,25 @@ void ATerrainChunk::Tick(float DeltaTime)
 
 	playerLoc = GI->Player;
 
+	int k;
 	if (playerLoc.X > (InitChunk.X + renderDistance + 500) || playerLoc.X < (InitChunk.X - renderDistance - 500) || playerLoc.Y > (InitChunk.Y + renderDistance + 500) || playerLoc.Y < (InitChunk.Y - renderDistance - 500)) {
 		//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Purple, FString::Printf(TEXT("GOOD BYE CHUNK")));
 		int i = 0;
 		for (FVector spawnLoc : GI->SpawnedChunks) {
 			
 			if (spawnLoc == InitChunk) {
-				GI->SpawnedChunks.RemoveAt(i);
+				k = i;
+				break;
 			}
 			i++;
 		}
 
+		GI->SpawnedChunks.RemoveAt(k);
 		Destroy();
+
 	}
+
+	
 
 }
 
@@ -222,7 +240,9 @@ void ATerrainChunk::Spawn(int X, int Y, FVector SpawnLocation, FRotator SpawnRot
 {
 	if (perlinVAL <= waterLevel) {//Water
 
-		AllCubes[5]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
+		
+
+		AllCubes[5]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
 		//Water->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
 	}
 
@@ -235,12 +255,12 @@ void ATerrainChunk::Spawn(int X, int Y, FVector SpawnLocation, FRotator SpawnRot
 		sandCount++;
 
 		if (sandCount % 47 <= 1) {
-			AllCubes[2]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+			AllCubes[2]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 			//Sand2->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
-			AllCubes[1]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+			AllCubes[1]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 			//Sand->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
@@ -253,12 +273,12 @@ void ATerrainChunk::Spawn(int X, int Y, FVector SpawnLocation, FRotator SpawnRot
 		sandCount2++;
 
 		if (sandCount2 % 22 <= 1) {
-			AllCubes[1]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+			AllCubes[1]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 			//Sand->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
-			AllCubes[2]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+			AllCubes[2]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 			//Sand2->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
@@ -271,12 +291,12 @@ void ATerrainChunk::Spawn(int X, int Y, FVector SpawnLocation, FRotator SpawnRot
 		grassCount++;
 
 		if (grassCount % 725 <= 2) {
-			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+			AllCubes[3]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
-			AllCubes[0]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+			AllCubes[0]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 			//Grass->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
@@ -289,12 +309,12 @@ void ATerrainChunk::Spawn(int X, int Y, FVector SpawnLocation, FRotator SpawnRot
 		stoneCount++;
 
 		if (stoneCount % 600 <= 2) {
-			AllCubes[4]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+			AllCubes[4]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 			//Snow->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
-			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+			AllCubes[3]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
@@ -308,12 +328,12 @@ void ATerrainChunk::Spawn(int X, int Y, FVector SpawnLocation, FRotator SpawnRot
 		snowCount++;
 
 		if (snowCount % 75 <= 1) {
-			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+			AllCubes[3]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
-			AllCubes[4]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+			AllCubes[4]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 			//Snow->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}

@@ -1,10 +1,11 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "PTRPGCharacter.h"
-#include "PTRPGProjectile.h"
+#include "FireBall.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Engine.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
@@ -101,7 +102,7 @@ void APTRPGCharacter::BeginPlay()
 	else
 	{
 		VR_Gun->SetHiddenInGame(true, true);
-		Mesh1P->SetHiddenInGame(false, true);
+		Mesh1P->SetHiddenInGame(true, true);
 	}
 }
 
@@ -150,7 +151,7 @@ void APTRPGCharacter::OnFire()
 			{
 				const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
 				const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
-				World->SpawnActor<APTRPGProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+				World->SpawnActor<AFireBall>(ProjectileClass, SpawnLocation, SpawnRotation);
 			}
 			else
 			{
@@ -163,7 +164,7 @@ void APTRPGCharacter::OnFire()
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 				// spawn the projectile at the muzzle
-				World->SpawnActor<APTRPGProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+				World->SpawnActor<AFireBall>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 			}
 		}
 	}
@@ -297,4 +298,57 @@ bool APTRPGCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInp
 	}
 	
 	return false;
+}
+
+void APTRPGCharacter::DestroyBlock()
+{
+	FHitResult Hit;
+
+	TArray<FHitResult> Hits;
+
+	
+	
+
+	Start = GetActorLocation();
+
+	End = ((FirstPersonCameraComponent->GetForwardVector() * 10000.0f) + Start);
+	FCollisionQueryParams TraceParams;
+
+	//Channel2 is the CustomOverlap Trace, (Overlaps All)
+	bool bHit = GetWorld()->LineTraceMultiByChannel(Hits, Start, End, ECC_GameTraceChannel2, TraceParams);
+		
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Purple, FString::Printf(TEXT("HELLO, maybe fail ?")));
+		//GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
+
+
+	FTransform InstanceTransform;
+
+	if (bHit) {
+
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("SUCCESS")));
+
+		for (FHitResult h : Hits) {
+			auto tempComponent = Cast<UInstancedStaticMeshComponent>(h.Component);
+
+			auto tempTransform = tempComponent->GetInstanceTransform(h.Item, InstanceTransform, false);
+
+			tempComponent->AddInstance(FTransform(FVector(InstanceTransform.GetLocation().X, InstanceTransform.GetLocation().Y, InstanceTransform.GetLocation().Z - 250.0f)));
+
+			tempComponent->RemoveInstance(h.Item);
+
+		}
+		
+	}
+
+	/*
+	auto tempComponent = Cast<UInstancedStaticMeshComponent>(Hit.Component);
+
+		auto tempTransform = tempComponent->GetInstanceTransform(Hit.Item, InstanceTransform, false);
+
+		tempComponent->AddInstance(FTransform(FVector(InstanceTransform.GetLocation().X, InstanceTransform.GetLocation().Y, InstanceTransform.GetLocation().Z - 250.0f)));
+
+		tempComponent->RemoveInstance(Hit.Item);
+	*/
+
+
 }

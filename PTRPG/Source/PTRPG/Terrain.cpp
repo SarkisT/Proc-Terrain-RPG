@@ -10,7 +10,7 @@
 ATerrain::ATerrain()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	
 
 }
@@ -29,6 +29,8 @@ void ATerrain::BeginPlay()
 	ChunkDistance = NumberMeshesX * Distance;
 
 	renderDistance = ChunkDistance * maxSpawns;
+
+	GenerationDistance = renderDistance / 2;
 	
 	//Save Chunk Distance
 	ChunkDist = FVector(MyChar.X + ChunkDistance, MyChar.Y + ChunkDistance, MyChar.Z);
@@ -139,29 +141,45 @@ void ATerrain::BeginPlay()
 
 
 	//Spawn initial Chunks.
-
-	
-
 	//NE
-	//GenerateChunk(FVector(InitChunk.X + (1 * ChunkDistance), InitChunk.Y + (1 * ChunkDistance), InitChunk.Z), 1, 1);
+	GenerateChunk(FVector(InitChunk.X + (1 * ChunkDistance), InitChunk.Y + (1 * ChunkDistance), InitChunk.Z), 1, 1);
 	//E
-	//GenerateChunk(FVector(InitChunk.X + (0 * ChunkDistance), InitChunk.Y + (1 * ChunkDistance), InitChunk.Z), 0, 1);
+	GenerateChunk(FVector(InitChunk.X + (0 * ChunkDistance), InitChunk.Y + (1 * ChunkDistance), InitChunk.Z), 0, 1);
 	//SE
-	//GenerateChunk(FVector(InitChunk.X + (-1 * ChunkDistance), InitChunk.Y + (1 * ChunkDistance), InitChunk.Z), -1, 1);
+	GenerateChunk(FVector(InitChunk.X + (-1 * ChunkDistance), InitChunk.Y + (1 * ChunkDistance), InitChunk.Z), -1, 1);
 	//N
-	//GenerateChunk(FVector(InitChunk.X + (1 * ChunkDistance), InitChunk.Y + (0 * ChunkDistance), InitChunk.Z), 1, 0);
-
+	GenerateChunk(FVector(InitChunk.X + (1 * ChunkDistance), InitChunk.Y + (0 * ChunkDistance), InitChunk.Z), 1, 0);
 	//MIDDLE
 	GenerateChunk(FVector(InitChunk.X, InitChunk.Y, InitChunk.Z), 0, 0);
-
 	//S
-	//GenerateChunk(FVector(InitChunk.X + (-1 * ChunkDistance), InitChunk.Y + (0 * ChunkDistance), InitChunk.Z), -1, 0);
+	GenerateChunk(FVector(InitChunk.X + (-1 * ChunkDistance), InitChunk.Y + (0 * ChunkDistance), InitChunk.Z), -1, 0);
 	//NW
-	//GenerateChunk(FVector(InitChunk.X + (1 * ChunkDistance), InitChunk.Y + (-1 * ChunkDistance), InitChunk.Z), 1, -1);
+	GenerateChunk(FVector(InitChunk.X + (1 * ChunkDistance), InitChunk.Y + (-1 * ChunkDistance), InitChunk.Z), 1, -1);
 	//W
-	//GenerateChunk(FVector(InitChunk.X + (0 * ChunkDistance), InitChunk.Y + (-1 * ChunkDistance), InitChunk.Z), 0, -1);
+	GenerateChunk(FVector(InitChunk.X + (0 * ChunkDistance), InitChunk.Y + (-1 * ChunkDistance), InitChunk.Z), 0, -1);
 	//SW
-	//GenerateChunk(FVector(InitChunk.X + (-1 * ChunkDistance), InitChunk.Y + (-1 * ChunkDistance), InitChunk.Z), -1, -1);
+	GenerateChunk(FVector(InitChunk.X + (-1 * ChunkDistance), InitChunk.Y + (-1 * ChunkDistance), InitChunk.Z), -1, -1);
+
+	GenerateChunk(FVector(InitChunk.X + (2 * ChunkDistance), InitChunk.Y + (-2 * ChunkDistance), InitChunk.Z), 2, -2);
+	GenerateChunk(FVector(InitChunk.X + (1 * ChunkDistance), InitChunk.Y + (-2 * ChunkDistance), InitChunk.Z), 1, -2);
+	GenerateChunk(FVector(InitChunk.X + (0 * ChunkDistance), InitChunk.Y + (-2 * ChunkDistance), InitChunk.Z), 0, -2);
+	GenerateChunk(FVector(InitChunk.X + (-1 * ChunkDistance), InitChunk.Y + (-2 * ChunkDistance), InitChunk.Z), -1, -2);
+	GenerateChunk(FVector(InitChunk.X + (-2* ChunkDistance), InitChunk.Y + (-2 * ChunkDistance), InitChunk.Z), -2, -2);
+
+	GenerateChunk(FVector(InitChunk.X + (-2 * ChunkDistance), InitChunk.Y + (-1 * ChunkDistance), InitChunk.Z), -2, -1);
+	GenerateChunk(FVector(InitChunk.X + (-2 * ChunkDistance), InitChunk.Y + (0 * ChunkDistance), InitChunk.Z), -2, 0);
+	GenerateChunk(FVector(InitChunk.X + (-2 * ChunkDistance), InitChunk.Y + (1 * ChunkDistance), InitChunk.Z), -2, 1);
+	GenerateChunk(FVector(InitChunk.X + (-2 * ChunkDistance), InitChunk.Y + (2 * ChunkDistance), InitChunk.Z), -2, 2);
+
+	GenerateChunk(FVector(InitChunk.X + (-1 * ChunkDistance), InitChunk.Y + (2 * ChunkDistance), InitChunk.Z), -1, 2);
+	GenerateChunk(FVector(InitChunk.X + (0 * ChunkDistance), InitChunk.Y + (2 * ChunkDistance), InitChunk.Z), 0, 2);
+	GenerateChunk(FVector(InitChunk.X + (1 * ChunkDistance), InitChunk.Y + (2 * ChunkDistance), InitChunk.Z), 1, 2);
+	GenerateChunk(FVector(InitChunk.X + (2 * ChunkDistance), InitChunk.Y + (2 * ChunkDistance), InitChunk.Z), 2, 2);
+
+	GenerateChunk(FVector(InitChunk.X + (2 * ChunkDistance), InitChunk.Y + (1 * ChunkDistance), InitChunk.Z), 2, 1);
+	GenerateChunk(FVector(InitChunk.X + (2 * ChunkDistance), InitChunk.Y + (0 * ChunkDistance), InitChunk.Z), 2, 0);
+	GenerateChunk(FVector(InitChunk.X + (2 * ChunkDistance), InitChunk.Y + (-1 * ChunkDistance), InitChunk.Z), 2, -1);
+
 
 
 	//	TArray<UChildActorComponent> children;
@@ -245,8 +263,9 @@ void ATerrain::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, 0.03, FColor::Orange, FString::Printf(TEXT("Coord Y : %i "), CoordY));
 
 
+	
 	//Manage Chunks, won't add duplicate chunks, maybe
-	if (prevX != CoordX) {
+	if (prevX < CoordX) {
 		GEngine->AddOnScreenDebugMessage(-1, 25, FColor::Emerald, FString::Printf(TEXT("Changed X ")));
 
 		for (int i = -2; i < 3; i++) {
@@ -260,7 +279,7 @@ void ATerrain::Tick(float DeltaTime)
 				//30 31 [32] 33 34 35
 				//40 41 42 43 44 45
 				//50 51 52 53 54 55
-				if (FVector(InitChunk.X + (CoordX * ChunkDistance), InitChunk.Y + (CoordY * ChunkDistance) + (i * ChunkDistance), InitChunk.Z) == spawns) {
+				if (FVector(InitChunk.X + (CoordX * ChunkDistance) + (ChunkDistance * 2), InitChunk.Y + (CoordY * ChunkDistance) + (i * ChunkDistance), InitChunk.Z) == spawns) {
 
 					//GEngine->AddOnScreenDebugMessage(-1, 25, FColor::Red, FString::Printf(TEXT("EEEEEEEEEEEEEE")));
 
@@ -270,7 +289,7 @@ void ATerrain::Tick(float DeltaTime)
 			}
 
 			if (bChunk == false) {
-				GenerateChunk(FVector(InitChunk.X + (CoordX * ChunkDistance), InitChunk.Y + (CoordY * ChunkDistance) + (i * ChunkDistance), InitChunk.Z), CoordX, CoordY + i);
+				GenerateChunk(FVector(InitChunk.X + (CoordX * ChunkDistance) + (ChunkDistance * 2), InitChunk.Y + (CoordY * ChunkDistance) + (i * ChunkDistance), InitChunk.Z), CoordX, CoordY + i);
 			}
 
 
@@ -283,7 +302,7 @@ void ATerrain::Tick(float DeltaTime)
 
 	}
 
-	if (prevY != CoordY) {
+	if (prevY < CoordY) {
 		GEngine->AddOnScreenDebugMessage(-1, 25, FColor::Orange, FString::Printf(TEXT("Changed Y ")));
 
 		for (int i = -2; i < 3; i++) {
@@ -292,7 +311,7 @@ void ATerrain::Tick(float DeltaTime)
 
 			for (FVector spawns : GI->SpawnedChunks) {
 
-				if (FVector(InitChunk.X + (CoordX * ChunkDistance) + (i * ChunkDistance), InitChunk.Y + (CoordY * ChunkDistance), InitChunk.Z) == spawns) {
+				if (FVector(InitChunk.X + (CoordX * ChunkDistance) + (i * ChunkDistance), InitChunk.Y + (CoordY * ChunkDistance) + (ChunkDistance * 2), InitChunk.Z) == spawns) {
 					bChunk = true;
 
 					//GEngine->AddOnScreenDebugMessage(-1, 25, FColor::Yellow, FString::Printf(TEXT("FOUND DooPE ")));
@@ -302,7 +321,7 @@ void ATerrain::Tick(float DeltaTime)
 			}
 
 			if (bChunk == false) {
-				GenerateChunk(FVector(InitChunk.X + (CoordX * ChunkDistance) + (i * ChunkDistance), InitChunk.Y + (CoordY * ChunkDistance), InitChunk.Z), CoordX + i, CoordY);
+				GenerateChunk(FVector(InitChunk.X + (CoordX * ChunkDistance) + (i * ChunkDistance), InitChunk.Y + (CoordY * ChunkDistance) + (ChunkDistance * 2), InitChunk.Z), CoordX + i, CoordY);
 			}
 
 			bChunk = false;
@@ -312,6 +331,74 @@ void ATerrain::Tick(float DeltaTime)
 		prevY = CoordY;
 
 	}
+
+	if (prevX > CoordX) {
+		GEngine->AddOnScreenDebugMessage(-1, 25, FColor::Emerald, FString::Printf(TEXT("Changed X ")));
+
+		for (int i = -2; i < 3; i++) {
+			for (FVector spawns : GI->SpawnedChunks) {
+
+				//XY
+
+				//00 01 02 03 04 05
+				//10 11 12 13 14 15
+				//20 21 22 23 24 25
+				//30 31 [32] 33 34 35
+				//40 41 42 43 44 45
+				//50 51 52 53 54 55
+				if (FVector(InitChunk.X + (CoordX * ChunkDistance) - (ChunkDistance * 2), InitChunk.Y + (CoordY * ChunkDistance) + (i * ChunkDistance), InitChunk.Z) == spawns) {
+
+					//GEngine->AddOnScreenDebugMessage(-1, 25, FColor::Red, FString::Printf(TEXT("EEEEEEEEEEEEEE")));
+
+					bChunk = true;
+				}
+
+			}
+
+			if (bChunk == false) {
+				GenerateChunk(FVector(InitChunk.X + (CoordX * ChunkDistance) - (ChunkDistance * 2), InitChunk.Y + (CoordY * ChunkDistance) + (i * ChunkDistance), InitChunk.Z), CoordX, CoordY + i);
+			}
+
+
+			bChunk = false;
+
+		}
+
+
+		prevX = CoordX;
+
+	}
+
+	if (prevY > CoordY) {
+		GEngine->AddOnScreenDebugMessage(-1, 25, FColor::Orange, FString::Printf(TEXT("Changed Y ")));
+
+		for (int i = -2; i < 3; i++) {
+
+
+
+			for (FVector spawns : GI->SpawnedChunks) {
+
+				if (FVector(InitChunk.X + (CoordX * ChunkDistance) + (i * ChunkDistance), InitChunk.Y + (CoordY * ChunkDistance) - (ChunkDistance * 2), InitChunk.Z) == spawns) {
+					bChunk = true;
+
+					//GEngine->AddOnScreenDebugMessage(-1, 25, FColor::Yellow, FString::Printf(TEXT("FOUND DooPE ")));
+
+				}
+
+			}
+
+			if (bChunk == false) {
+				GenerateChunk(FVector(InitChunk.X + (CoordX * ChunkDistance) + (i * ChunkDistance), InitChunk.Y + (CoordY * ChunkDistance) - (ChunkDistance * 2), InitChunk.Z), CoordX + i, CoordY);
+			}
+
+			bChunk = false;
+
+		}
+
+		prevY = CoordY;
+
+	}
+	
 
 	//GEngine->AddOnScreenDebugMessage(-1, 0.03, FColor::Blue, FString::Printf(TEXT("Player is : %s "), *MyChar.ToString()));
 

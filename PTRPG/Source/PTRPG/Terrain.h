@@ -38,7 +38,7 @@ public:
 		int Distance = 250;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TerrainSize")
-		int DistanceHeight;
+		int GenerationDistance;
 
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Biome")
 	int biome;
