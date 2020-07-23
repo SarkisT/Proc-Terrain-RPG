@@ -19,7 +19,7 @@ class APTRPGCharacter : public ACharacter
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
 	class USkeletalMeshComponent* Mesh1P;
 
-
+	
 	
 	/** Gun mesh: VR view (attached to the VR controller directly, no arm, just the actual gun) */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
@@ -44,8 +44,13 @@ class APTRPGCharacter : public ACharacter
 	FVector Start;
 	FVector End;
 
+	FTimerHandle SpeedTimer;
+
 public:
 	APTRPGCharacter();
+
+	// Called every frame.
+	virtual void Tick(float DeltaSeconds) override;
 
 protected:
 	virtual void BeginPlay();
@@ -83,9 +88,38 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class UAnimMontage* FireAnimation;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
+	class UStaticMeshComponent* Wand;
+
+
 	/** Whether to use motion controller location for aiming. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	uint32 bUsingMotionControllers : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") bool bLaser = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") bool bCanRotateAttack = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") bool bIsHealing = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") bool bSpeedBuffed = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int AttackIndex = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int HP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int maxHP = 250;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int MP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int maxMP = 1000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int XP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int maxXP = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int playerLevel;
+
 
 protected:
 	
@@ -147,6 +181,18 @@ public:
 
 	UFUNCTION(BluePrintCallable)
 		void DestroyBlock();
+
+	UFUNCTION(BluePrintCallable)
+		void ChangeAttack();
+
+	UFUNCTION(BluePrintCallable)
+		void StopLaser();
+
+	UFUNCTION(BluePrintCallable)
+		void StopSpeed();
+
+	UFUNCTION(BluePrintCallable)
+		void Sprint();
 
 };
 

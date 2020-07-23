@@ -20,6 +20,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
 APTRPGCharacter::APTRPGCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
@@ -32,6 +34,12 @@ APTRPGCharacter::APTRPGCharacter()
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->RelativeLocation = FVector(-39.56f, 1.75f, 64.0f); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+
+	Wand = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Wand"));
+	Wand->SetupAttachment(FirstPersonCameraComponent);
+	Wand->RelativeLocation = FVector(114.514038, 81.390511, -207.057617);
+	Wand->RelativeRotation = FRotator(-87.199997, -49.714008, 49.004013);
+	
 
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
@@ -81,8 +89,39 @@ APTRPGCharacter::APTRPGCharacter()
 	VR_MuzzleLocation->SetRelativeLocation(FVector(0.000004, 53.999992, 10.000000));
 	VR_MuzzleLocation->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));		// Counteract the rotation of the VR gun model.
 
+	HP = maxHP;
+	MP = maxMP;
+
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
+}
+
+void APTRPGCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (bLaser) {
+		DestroyBlock();
+	}
+
+	if (bIsHealing && MP >= 15) {
+		MP -= 15;
+		if (HP < maxHP) {
+			HP += 1;
+		}
+		if (HP > maxHP) {
+			HP = maxHP;
+		}
+	}
+
+	if (bSpeedBuffed && MP >= 1) {
+		MP -= 1;
+	}
+	
+
+	if (MP < maxMP) {
+		MP += 1;
+	}
 }
 
 void APTRPGCharacter::BeginPlay()
@@ -118,8 +157,16 @@ void APTRPGCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
+	//Bind Attack Rotation
+	PlayerInputComponent->BindAction("RotateAttack", IE_Pressed, this, &APTRPGCharacter::ChangeAttack);
+
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APTRPGCharacter::OnFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APTRPGCharacter::StopLaser);
+
+	//Bind Sprint
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APTRPGCharacter::Sprint);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APTRPGCharacter::StopSpeed);
 
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
@@ -141,40 +188,84 @@ void APTRPGCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 
 void APTRPGCharacter::OnFire()
 {
-	// try and fire a projectile
-	if (ProjectileClass != NULL)
-	{
-		UWorld* const World = GetWorld();
-		if (World != NULL)
-		{
-			if (bUsingMotionControllers)
+
+	switch (AttackIndex) {
+	case 0://Fire Ball
+
+		if (MP >= 100) {
+
+			MP -= 100;
+
+			if (ProjectileClass != NULL)
 			{
-				const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
-				const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
-				World->SpawnActor<AFireBall>(ProjectileClass, SpawnLocation, SpawnRotation);
+				UWorld* const World = GetWorld();
+				if (World != NULL)
+				{
+					if (bUsingMotionControllers)
+					{
+						const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
+						const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
+						World->SpawnActor<AFireBall>(ProjectileClass, SpawnLocation, SpawnRotation);
+					}
+					else
+					{
+						const FRotator SpawnRotation = GetControlRotation();
+						// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+						const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
+
+						//Set Spawn Collision Handling Override
+						FActorSpawnParameters ActorSpawnParams;
+						ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+						// spawn the projectile at the muzzle
+						World->SpawnActor<AFireBall>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+					}
+				}
 			}
-			else
+
+			// try and play the sound if specified
+			if (FireSound != NULL)
 			{
-				const FRotator SpawnRotation = GetControlRotation();
-				// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-				const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
-
-				//Set Spawn Collision Handling Override
-				FActorSpawnParameters ActorSpawnParams;
-				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-				// spawn the projectile at the muzzle
-				World->SpawnActor<AFireBall>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+				UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 			}
 		}
-	}
 
-	// try and play the sound if specified
-	if (FireSound != NULL)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	}
+		break;
+	case 1://Laser Beam
+		if (MP >= 3) {
+			bLaser = true;
+			bCanRotateAttack = false;
+		}
+		break;
+	case 2://Speed Buff
 
+		/*
+		if (MP >= 300 && !bSpeedBuffed) {
+
+			MP -= 300;
+
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("SUCCESS")));
+
+			GetCharacterMovement()->MaxWalkSpeed = 10000;
+
+			bSpeedBuffed = true;
+
+			GetWorld()->GetTimerManager().SetTimer(SpeedTimer, this, &APTRPGCharacter::StopSpeed, 10.0f, false);
+		}
+		*/
+
+		break;
+	case 3://Heal
+
+		if (MP >= 15) {
+			bIsHealing = true;
+			bCanRotateAttack = false;
+		}
+
+		break;
+	}
+	
+	/*
 	// try and play a firing animation if specified
 	if (FireAnimation != NULL)
 	{
@@ -185,6 +276,7 @@ void APTRPGCharacter::OnFire()
 			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
 	}
+	*/
 }
 
 void APTRPGCharacter::OnResetVR()
@@ -302,53 +394,122 @@ bool APTRPGCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInp
 
 void APTRPGCharacter::DestroyBlock()
 {
-	FHitResult Hit;
 
-	TArray<FHitResult> Hits;
+	if (MP >= 3) {
 
-	
-	
+		MP -= 3;
 
-	Start = GetActorLocation();
+		FHitResult Hit;
 
-	End = ((FirstPersonCameraComponent->GetForwardVector() * 10000.0f) + Start);
-	FCollisionQueryParams TraceParams;
-
-	//Channel2 is the CustomOverlap Trace, (Overlaps All)
-	bool bHit = GetWorld()->LineTraceMultiByChannel(Hits, Start, End, ECC_GameTraceChannel2, TraceParams);
-		
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Purple, FString::Printf(TEXT("HELLO, maybe fail ?")));
-		//GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
+		TArray<FHitResult> Hits;
 
 
-	FTransform InstanceTransform;
 
-	if (bHit) {
 
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("SUCCESS")));
+		//GetWorldLocation for component
+		Start = Wand->GetComponentToWorld().GetLocation();
 
-		for (FHitResult h : Hits) {
-			auto tempComponent = Cast<UInstancedStaticMeshComponent>(h.Component);
+		//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Silver, FString::Printf(TEXT("Initial Block Location is : %s "), *Start.ToString()));
 
-			auto tempTransform = tempComponent->GetInstanceTransform(h.Item, InstanceTransform, false);
+		End = ((FirstPersonCameraComponent->GetForwardVector() * 100000.0f) + Start);
+		FCollisionQueryParams TraceParams;
 
-			tempComponent->AddInstance(FTransform(FVector(InstanceTransform.GetLocation().X, InstanceTransform.GetLocation().Y, InstanceTransform.GetLocation().Z - 250.0f)));
+		TraceParams.AddIgnoredActor(this);
 
-			tempComponent->RemoveInstance(h.Item);
+
+		//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Silver, FString::Printf(TEXT("Initial Block Location is : %s "), *End.ToString()));
+
+		//Channel2 is the CustomOverlap Trace, (Overlaps All)
+		//bool bHit = GetWorld()->LineTraceMultiByChannel(Hits, Start, End, ECC_GameTraceChannel2, TraceParams);
+
+
+		bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
+
+		//GetWorld().linetrac
+
+		FTransform InstanceTransform;
+
+
+		/*
+		if (bHit) {
+
+			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("SUCCESS")));
+
+			for (FHitResult h : Hits) {
+				auto tempComponent = Cast<UInstancedStaticMeshComponent>(h.Component);
+
+				auto tempTransform = tempComponent->GetInstanceTransform(h.Item, InstanceTransform, false);
+
+				//tempComponent->AddInstance(FTransform(FVector(InstanceTransform.GetLocation().X, InstanceTransform.GetLocation().Y, InstanceTransform.GetLocation().Z - 250.0f)));
+
+				tempComponent->RemoveInstance(h.Item);
+
+			}
 
 		}
-		
+		*/
+
+
+		if (bHit) {
+			
+			if (UInstancedStaticMeshComponent* tempComponent = Cast<UInstancedStaticMeshComponent>(Hit.Component)) {
+				tempComponent = Cast<UInstancedStaticMeshComponent>(Hit.Component);
+
+				GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, FString::Printf(TEXT("ye")));
+
+				if (tempComponent != nullptr || tempComponent != NULL) {
+					auto tempTransform = tempComponent->GetInstanceTransform(Hit.Item, InstanceTransform, false);
+
+					//tempComponent->AddInstance(FTransform(FVector(InstanceTransform.GetLocation().X, InstanceTransform.GetLocation().Y, InstanceTransform.GetLocation().Z - 250.0f)));
+
+					tempComponent->RemoveInstance(Hit.Item);
+				}
+			}
+		}
+	
+
+	}
+	else {
+		bLaser = false;
+		bCanRotateAttack = true;
 	}
 
-	/*
-	auto tempComponent = Cast<UInstancedStaticMeshComponent>(Hit.Component);
+}
 
-		auto tempTransform = tempComponent->GetInstanceTransform(Hit.Item, InstanceTransform, false);
+void APTRPGCharacter::ChangeAttack()
+{
+	if (bCanRotateAttack) {
+		if (AttackIndex > 4) {
+			AttackIndex = 0;
+		}
+		else {
+			AttackIndex++;
+		}
+	}
 
-		tempComponent->AddInstance(FTransform(FVector(InstanceTransform.GetLocation().X, InstanceTransform.GetLocation().Y, InstanceTransform.GetLocation().Z - 250.0f)));
+}
 
-		tempComponent->RemoveInstance(Hit.Item);
-	*/
+void APTRPGCharacter::StopLaser()
+{
+	bLaser = false;
+	bCanRotateAttack = true;
+	bIsHealing = false;
+}
+
+void APTRPGCharacter::StopSpeed()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 2500;
+	bSpeedBuffed = false;
 
 
+}
+
+void APTRPGCharacter::Sprint()
+{
+	if (!bSpeedBuffed && MP >= 1) {
+
+		GetCharacterMovement()->MaxWalkSpeed = 6500;
+
+		bSpeedBuffed = true;
+	}
 }
