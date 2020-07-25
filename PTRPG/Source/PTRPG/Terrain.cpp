@@ -257,8 +257,6 @@ void ATerrain::Tick(float DeltaTime)
 	CoordX = (MyChar.X / ChunkDistance);
 	CoordY = (MyChar.Y / ChunkDistance);
 
-	GEngine->AddOnScreenDebugMessage(-1, 0.03, FColor::Orange, FString::Printf(TEXT("MYCHAR : %f "), MyChar.X));
-
 	GEngine->AddOnScreenDebugMessage(-1, 0.03, FColor::Orange, FString::Printf(TEXT("Coord X : %i "), CoordX));
 	GEngine->AddOnScreenDebugMessage(-1, 0.03, FColor::Orange, FString::Printf(TEXT("Coord Y : %i "), CoordY));
 
