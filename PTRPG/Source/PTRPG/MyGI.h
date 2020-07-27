@@ -16,7 +16,7 @@ class PTRPG_API UMyGI : public UGameInstance
 
 public:
 
-
+		UPROPERTY(EditAnywhere, BluePrintReadWrite)
 		int customSeed; 
 	
 		int NumberMeshesX;
@@ -40,6 +40,7 @@ public:
 
 		int Distance;
 
+		UPROPERTY(EditAnywhere, BluePrintReadWrite)
 		int biome;
 		
 		//SpawnLocation for Chunks

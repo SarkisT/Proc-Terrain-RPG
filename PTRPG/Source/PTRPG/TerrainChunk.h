@@ -76,6 +76,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "WaterLevel")
 		TSubclassOf<AActor> WaterCollider;
 
+
+
 	//UPROPERTY(EditAnywhere, Category = "TerrainSpawner")
 	//	TSubclassOf<ATerrain> TerrainGenerator;
 

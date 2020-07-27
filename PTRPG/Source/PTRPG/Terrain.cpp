@@ -105,7 +105,11 @@ void ATerrain::BeginPlay()
 
 	MovingActor = ActorVect;
 
-	if (biome == 0) {
+	
+
+	biome = GI->biome;
+
+	if (biome <= 0 || biome > 4) {
 		biome = seed.RandRange(1, 4);
 	}
 
@@ -141,6 +145,8 @@ void ATerrain::BeginPlay()
 
 
 	//Spawn initial Chunks.
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	//NE
 	GenerateChunk(FVector(InitChunk.X + (1 * ChunkDistance), InitChunk.Y + (1 * ChunkDistance), InitChunk.Z), 1, 1);
 	//E
@@ -179,6 +185,7 @@ void ATerrain::BeginPlay()
 	GenerateChunk(FVector(InitChunk.X + (2 * ChunkDistance), InitChunk.Y + (1 * ChunkDistance), InitChunk.Z), 2, 1);
 	GenerateChunk(FVector(InitChunk.X + (2 * ChunkDistance), InitChunk.Y + (0 * ChunkDistance), InitChunk.Z), 2, 0);
 	GenerateChunk(FVector(InitChunk.X + (2 * ChunkDistance), InitChunk.Y + (-1 * ChunkDistance), InitChunk.Z), 2, -1);
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -257,8 +264,8 @@ void ATerrain::Tick(float DeltaTime)
 	CoordX = (MyChar.X / ChunkDistance);
 	CoordY = (MyChar.Y / ChunkDistance);
 
-	GEngine->AddOnScreenDebugMessage(-1, 0.03, FColor::Orange, FString::Printf(TEXT("Coord X : %i "), CoordX));
-	GEngine->AddOnScreenDebugMessage(-1, 0.03, FColor::Orange, FString::Printf(TEXT("Coord Y : %i "), CoordY));
+	//GEngine->AddOnScreenDebugMessage(-1, 0.03, FColor::Orange, FString::Printf(TEXT("Coord X : %i "), CoordX));
+	//GEngine->AddOnScreenDebugMessage(-1, 0.03, FColor::Orange, FString::Printf(TEXT("Coord Y : %i "), CoordY));
 
 
 	
@@ -985,6 +992,11 @@ void ATerrain::GenerateChunk(FVector ChunkLocation, int X, int Y)
 		}		
 		break;
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, FString::Printf(TEXT("Chunks Spawned : %i "), chunkId));
+
+
+
 
 	/*
 	

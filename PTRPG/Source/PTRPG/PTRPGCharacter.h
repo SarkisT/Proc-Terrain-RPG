@@ -44,7 +44,7 @@ class APTRPGCharacter : public ACharacter
 	FVector Start;
 	FVector End;
 
-	FTimerHandle SpeedTimer;
+	FTimerHandle LevelUpTimer;
 
 public:
 	APTRPGCharacter();
@@ -95,6 +95,8 @@ public:
 	/** Whether to use motion controller location for aiming. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	uint32 bUsingMotionControllers : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") bool bLevelUp = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") bool bLaser = false;
 	
@@ -193,6 +195,9 @@ public:
 
 	UFUNCTION(BluePrintCallable)
 		void Sprint();
+
+	UFUNCTION(BluePrintCallable)
+		void StopLevelUp();
 
 };
 

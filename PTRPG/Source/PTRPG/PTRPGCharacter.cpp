@@ -100,10 +100,12 @@ void APTRPGCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	//When Shooting Laser
 	if (bLaser) {
 		DestroyBlock();
 	}
 
+	//When Healing
 	if (bIsHealing && MP >= 15) {
 		MP -= 15;
 		if (HP < maxHP) {
@@ -114,13 +116,32 @@ void APTRPGCharacter::Tick(float DeltaSeconds)
 		}
 	}
 
+	//When Speed Buffed
 	if (bSpeedBuffed && MP >= 1) {
 		MP -= 1;
 	}
 	
-
+	//Mana Regen
 	if (MP < maxMP) {
 		MP += 1;
+	}
+
+	//Level Up
+	if (XP >= maxXP) {
+
+		bLevelUp = true;
+
+		GetWorld()->GetTimerManager().SetTimer(LevelUpTimer, this, &APTRPGCharacter::StopLevelUp, 5.0f, false);
+
+		XP = 0;
+		maxXP = maxXP * 2;
+
+		maxHP += 100;
+		HP = maxHP;
+
+		maxMP += 500;
+		MP = maxMP;
+
 	}
 }
 
@@ -512,4 +533,9 @@ void APTRPGCharacter::Sprint()
 
 		bSpeedBuffed = true;
 	}
+}
+
+void APTRPGCharacter::StopLevelUp()
+{
+	bLevelUp = false;
 }
