@@ -43,34 +43,8 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Biome")
 	int biome;
 
-	UPROPERTY(EditAnywhere, Category = "WaterLevel")
-		TSubclassOf<AActor> WaterCollider;
-
-	UPROPERTY(VisibleAnywhere, Category = "TerrainChunk")
-		TSubclassOf<ATerrainChunk> Chunk;
-	
-		ATerrainChunk* SpawnedChunk;
-
-		ATerrainChunk* FinalChunk;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Instance")
-		UInstancedStaticMeshComponent* CubeInstance;
-
-		UMyGI* GI;
-
-		TArray<UInstancedStaticMeshComponent*> ChunkInstance;
-
-
-
-		
-	//UInstancedStaticMeshComponent* CubeInstance = Cast<UInstancedStaticMeshComponent>(v);
-
-
-	FRandomStream seed;	//Game seed!
-
-	FVector TestVect;
-
-	bool spawned = false;
+	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Render")
+		int maxSpawns = 7;
 
 	int offSet;
 	int offSetHeight;
@@ -78,14 +52,6 @@ public:
 
 	float perlinVAL;
 	float waterLevel;
-
-	int cubeCount;
-	int sandCount;
-	int sandCount2;
-	int grassCount;
-	int stoneCount;
-	int snowCount;
-	int waterCount;
 
 	int CoordX;
 	int CoordY;
@@ -95,21 +61,25 @@ public:
 
 	int ChunkDistance;
 
-	int N;
-	int E;
-	int W;
-	int S;
-
 	bool bChunk = false;
 
 	int renderDistance;
 
-	UPROPERTY(EditAnywhere,BluePrintReadWrite, Category = "Render")
-	int maxSpawns = 7;
+	UPROPERTY(EditAnywhere, Category = "DeathZone")
+		TSubclassOf<AActor> DeathZone;
 
-	int chunkCount;
+	UPROPERTY(VisibleAnywhere, Category = "TerrainChunk")
+		TSubclassOf<ATerrainChunk> Chunk;
+	
+		ATerrainChunk* SpawnedChunk;
 
-	FVector ActorVect;
+		UMyGI* GI;
+
+		TArray<UInstancedStaticMeshComponent*> ChunkInstance;
+
+
+
+	FRandomStream seed;	//Game seed!
 
 	FVector MyChar;
 
@@ -119,53 +89,6 @@ public:
 
 	TArray<FVector> ChunkSpawns;
 
-	UMaterialInterface* SandMat;
-	UMaterialInterface* StoneMat;
-	UMaterialInterface* SnowMat;
-	UMaterialInterface* GrassMat;
-
-	TArray<FTransform*> CubeLocations;
-
-	FTransform CubeTransform;
-
-	int chunkId;
-
-	TArray<int> meshInstances;
-
-	//Get X val of chunk
-	TMap<int, TMap<int, TArray<int>>> ChunkXMap;
-
-	//Get Y val of chunk, Remove instances.
-	TMap<int, TArray<int>> ChunkYMap;
-
-	TMap<int, TArray<int>> ChunkTestMap;
-
-	TArray<int> ChunkValMap;
-	
-
-	TArray<UInstancedStaticMeshComponent*> AllCubes;
-
-	FVector MovingActor;
-
-	UMaterialInstanceDynamic* DynamicMat;
-
-	UFUNCTION(BluePrintCallable)
-		void Spawn(int X, int Y, FVector SpawnLocation, FRotator SpawnRotation);
-
-	UFUNCTION(BluePrintCallable)
-		void SpawnDesert(int X, int Y, FVector SpawnLocation, FRotator SpawnRotation);
-
-	UFUNCTION(BluePrintCallable)
-		void SpawnTundra(int X, int Y, FVector SpawnLocation, FRotator SpawnRotation);
-
-	UFUNCTION(BluePrintCallable)
-		void SpawnIslands(int X, int Y, FVector SpawnLocation, FRotator SpawnRotation);
-
-	UFUNCTION(BluePrintCallable)
-		void GenerateChunk(FVector ChunkLocation, int X, int Y);
-
-	UFUNCTION(BluePrintCallable)
-		void DeleteChunk(int x, int y);
 
 protected:
 	// Called when the game starts or when spawned
@@ -174,5 +97,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BluePrintCallable)
+		void GenerateChunk(FVector ChunkLocation, int X, int Y);
 
 };

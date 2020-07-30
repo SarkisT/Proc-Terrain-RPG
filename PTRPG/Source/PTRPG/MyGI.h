@@ -17,7 +17,10 @@ class PTRPG_API UMyGI : public UGameInstance
 public:
 
 		UPROPERTY(EditAnywhere, BluePrintReadWrite)
-		int customSeed; 
+		int customSeed;
+
+		UPROPERTY(EditAnywhere, BluePrintReadWrite)
+			int playerLevel;
 	
 		int NumberMeshesX;
 		int NumberMeshesY;
@@ -25,9 +28,6 @@ public:
 
 		int CoordX;
 		int CoordY;
-
-		TArray<int> allX;
-		TArray<int> allY;
 
 		int offSet;
 		int offSetHeight;

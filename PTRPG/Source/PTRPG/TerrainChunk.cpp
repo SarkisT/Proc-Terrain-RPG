@@ -63,9 +63,6 @@ void ATerrainChunk::BeginPlay()
 	CoordX = GI->CoordX;
 	CoordY = GI->CoordY;
 
-	GI->allX.Add(CoordX);
-	GI->allY.Add(CoordY);
-
 	offSet = GI->offSet;
 	offSetHeight = GI->offSetHeight;
 	offSetZoom = GI->offSetZoom;
@@ -79,11 +76,11 @@ void ATerrainChunk::BeginPlay()
 
 	waterLevel = GI->waterLevel;
 
+	enemySpawnRate = FMath::RandRange(2200, 4000);
+	
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("Spawn rate %i"), enemySpawnRate));
 
 	Comps = GetComponentsByClass(UInstancedStaticMeshComponent::StaticClass());
-
-
-	//Comps = GetComponentsByClass(UInstancedStaticMeshComponent::StaticClass());
 
 	this->GetComponents(Comps);
 
@@ -93,14 +90,7 @@ void ATerrainChunk::BeginPlay()
 
 		CubeInstance = Cast<UInstancedStaticMeshComponent>(v);
 
-
-
-		//Cast<UInstancedStaticMeshComponent>(v);
-
 		if (CubeInstance != nullptr || v != NULL) {
-			//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Purple, FString::Printf(TEXT("HELLOo,  B")));
-
-			//CubeInstance = Cast<UInstancedStaticMeshComponent>(v);
 
 			AllCubes.Add(CubeInstance);
 
@@ -115,7 +105,6 @@ void ATerrainChunk::BeginPlay()
 		biome = seed.RandRange(1, 4);
 	}
 
-
 	switch (biome) {
 	case 1://Desert
 		for (int i = 0; i < NumberMeshesX; i++)//X number of Meshes to spawn
@@ -123,11 +112,11 @@ void ATerrainChunk::BeginPlay()
 			for (int j = 0; j < NumberMeshesY; j++)//Y number of Mesh to spawn
 			{
 				for (int k = 0; k < NumberMeshesZ; k++) {
+
+					cubeCount++;
+
 					//Spawning location for our tile.
 					FVector TileLocation = FVector(InitChunk.X + (i * Distance), InitChunk.Y + (j * Distance), InitChunk.Z + (k * Distance));
-
-					//CubeLocations.Add(TileLocation);
-
 
 					perlinVAL = FMath::PerlinNoise3D(FVector(TileLocation.X, TileLocation.Y, TileLocation.Z + offSet) / offSetZoom);
 
@@ -145,11 +134,10 @@ void ATerrainChunk::BeginPlay()
 			for (int j = 0; j < NumberMeshesY; j++)//Y number of Mesh to spawn
 			{
 				for (int k = 0; k < NumberMeshesZ; k++) {
+					cubeCount++;
+
 					//Spawning location for our tile.
 					FVector TileLocation = FVector(InitChunk.X + (i * Distance), InitChunk.Y + (j * Distance), InitChunk.Z + (k * Distance));
-
-					//CubeLocations.Add(TileLocation);
-
 
 					perlinVAL = FMath::PerlinNoise3D(FVector(TileLocation.X, TileLocation.Y, TileLocation.Z + offSet) / offSetZoom);
 
@@ -166,13 +154,9 @@ void ATerrainChunk::BeginPlay()
 			for (int j = 0; j < NumberMeshesY; j++)//Y number of Mesh to spawn
 			{
 				for (int k = 0; k < NumberMeshesZ; k++) {
+					cubeCount++;
 					//Spawning location for our tile.
 					FVector TileLocation = FVector(InitChunk.X + (i * Distance), InitChunk.Y + (j * Distance), InitChunk.Z + (k * Distance));
-
-					//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Purple, FString::Printf(TEXT("GOOD BYE CHUNK")));
-
-					//CubeLocations.Add(TileLocation);
-
 
 					perlinVAL = FMath::PerlinNoise3D(FVector(TileLocation.X, TileLocation.Y, TileLocation.Z + offSet) / offSetZoom);
 
@@ -188,11 +172,10 @@ void ATerrainChunk::BeginPlay()
 			for (int j = 0; j < NumberMeshesY; j++)//Y number of Mesh to spawn
 			{
 				for (int k = 0; k < NumberMeshesZ; k++) {
+					cubeCount++;
 					//Spawning location for our tile.
+
 					FVector TileLocation = FVector(InitChunk.X + (i * Distance), InitChunk.Y + (j * Distance), InitChunk.Z + (k * Distance));
-
-					//CubeLocations.Add(TileLocation);
-
 
 					perlinVAL = FMath::PerlinNoise3D(FVector(TileLocation.X, TileLocation.Y, TileLocation.Z + offSet) / offSetZoom);
 
@@ -202,8 +185,6 @@ void ATerrainChunk::BeginPlay()
 		}
 		break;
 	}
-
-	//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, FString::Printf(TEXT("Finished Spawn")));
 
 }
 
@@ -216,7 +197,6 @@ void ATerrainChunk::Tick(float DeltaTime)
 
 	int k;
 	if (playerLoc.X > (InitChunk.X + renderDistance + 500) || playerLoc.X < (InitChunk.X - renderDistance - 500) || playerLoc.Y > (InitChunk.Y + renderDistance + 500) || playerLoc.Y < (InitChunk.Y - renderDistance - 500)) {
-		//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Purple, FString::Printf(TEXT("GOOD BYE CHUNK")));
 		int i = 0;
 		for (FVector spawnLoc : GI->SpawnedChunks) {
 			
@@ -229,147 +209,85 @@ void ATerrainChunk::Tick(float DeltaTime)
 
 		GI->SpawnedChunks.RemoveAt(k);
 		Destroy();
-
 	}
-
-	
-
 }
 
 void ATerrainChunk::Spawn(int X, int Y, FVector SpawnLocation, FRotator SpawnRotation)
 {
 	if (perlinVAL <= waterLevel) {//Water
-
-		
-
 		AllCubes[5]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
-		//Water->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
 	}
 
+	if (cubeCount % enemySpawnRate < 1) {
+		
+		AMyEnemy* SpawnedEnemy = Cast<AMyEnemy>(GetWorld()->SpawnActor(Enemy.Get()));
 
-	//AllCubes[1]->PostDuplicate()
+		SpawnedEnemy->SetActorLocation(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 700 + (offSetHeight * perlinVAL)));
+			
+	}
 
 	if (perlinVAL <= -0.3f) {//Sand
-		//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT(" 1")));
-		//AllCubes[1]->SetMaterial(0, SandMat);
 		sandCount++;
 
 		if (sandCount % 47 <= 1) {
 			AllCubes[2]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Sand2->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[1]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Sand->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 
 	}
 	else if (perlinVAL > -0.3 && perlinVAL <= -0.1) {//Sand 2
-	   //GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT(" 2")));
-	   //AllCubes[2]->SetMaterial(0, StoneMat);
-
 		sandCount2++;
 
 		if (sandCount2 % 22 <= 1) {
 			AllCubes[1]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Sand->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[2]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Sand2->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
-		//AllCubes[2]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 	}
 	else if (perlinVAL > -0.1 && perlinVAL <= 0.3) {//Grass
-		//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT(" 2")));
-		//AllCubes[2]->SetMaterial(0, StoneMat);
-
+	
 		grassCount++;
 
 		if (grassCount % 725 <= 2) {
 			AllCubes[3]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[0]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Grass->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
-		//AllCubes[0]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 	}
 	else if (perlinVAL > 0.3 && perlinVAL <= 0.6) {//Stone
-		//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT(" 3")));
-		//AllCubes[3]->SetMaterial(0, SnowMat);
-
 		stoneCount++;
 
 		if (stoneCount % 600 <= 2) {
 			AllCubes[4]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Snow->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[3]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 
-		//AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 	}
 	else {//Snow
-		//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT(" 4")));
-		//AllCubes[4]->SetMaterial(0, GrassMat);
 
 		snowCount++;
 
 		if (snowCount % 75 <= 1) {
 			AllCubes[3]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[4]->AddInstance(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-			//Snow->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
-
-		//AllCubes[4]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
+;
 	}
-
-
-	//CubeInstance->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-	/*
-	//Height of the terrain
-	if (perlinVAL <= 0.2f) {
-		AllCubes[0]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-	}
-	else if (perlinVAL > 0.2 && perlinVAL <= 0.6) {
-		AllCubes[1]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-	}
-	else if (perlinVAL > 0.6 && perlinVAL <= 0.85) {
-		AllCubes[2]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-	}
-	else {
-		AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-	}
-	*/
-	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Silver, FString::Printf(TEXT("Perlin value %f"), perlinVAL));
-
-	//AllCubes.Add(CubeInstance);
-	//CubeInstance.Addinst
-
-	//SpawnedObject = GetWorld()->SpawnActor<ABasicFloor>(BaseFloor, SpawnLocation, SpawnRotation, spawnParams);//Tile we spawning
-
-
-
-	//GetWorld()->SpawnActor<AStaticMeshActor>(BaseFloor, SpawnLocation, SpawnRotation, spawnParams);//Tile we spawning
-
 
 }
 
@@ -377,27 +295,26 @@ void ATerrainChunk::SpawnDesert(int X, int Y, FVector SpawnLocation, FRotator Sp
 {
 	if (perlinVAL <= waterLevel) {//Water
 		AllCubes[5]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
-		//Water->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
 	}
 
+	if (cubeCount % enemySpawnRate == 0) {
+		
+		AMyEnemy* SpawnedEnemy = Cast<AMyEnemy>(GetWorld()->SpawnActor(Enemy.Get()));
+
+		SpawnedEnemy->SetActorLocation(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 700 + (offSetHeight * perlinVAL)));
+	}
 
 	if (perlinVAL >= (waterLevel - 0.04) && perlinVAL <= (waterLevel + 0.01)) {//Grass   (Oasis)
 		AllCubes[0]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-		//Grass->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 	}
 	else if (perlinVAL > (waterLevel + 0.02) && perlinVAL <= -0.15f) {//Sand
 		sandCount++;
 
 		if (sandCount % 59 < 1) {
 			AllCubes[2]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-			
-			//Sand2->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[1]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-			//Sand->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 	}
 	else if (perlinVAL > -0.15f && perlinVAL <= 0.3f) {//Sand 2
@@ -405,13 +322,9 @@ void ATerrainChunk::SpawnDesert(int X, int Y, FVector SpawnLocation, FRotator Sp
 
 		if (sandCount2 % 181 < 1) {
 			AllCubes[1]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-			//Sand->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[2]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-			//Sand2->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 	}
 	else {
@@ -419,13 +332,9 @@ void ATerrainChunk::SpawnDesert(int X, int Y, FVector SpawnLocation, FRotator Sp
 
 		if (sandCount % 111 < 1) {
 			AllCubes[2]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-			//Sand2->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[1]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-			//Sand->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 	}
 
@@ -436,9 +345,14 @@ void ATerrainChunk::SpawnTundra(int X, int Y, FVector SpawnLocation, FRotator Sp
 	if (perlinVAL <= waterLevel) {//Water
 
 		AllCubes[5]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
+	}
 
+	if (cubeCount % enemySpawnRate == 0) {
+		
+		AMyEnemy* SpawnedEnemy = Cast<AMyEnemy>(GetWorld()->SpawnActor(Enemy.Get()));
 
-		//Water->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
+		SpawnedEnemy->SetActorLocation(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 700 + (offSetHeight * perlinVAL)));
+
 	}
 
 	if (perlinVAL >= -0.5f && perlinVAL <= -0.2f) {//Grass 66% Stone 34%
@@ -448,12 +362,10 @@ void ATerrainChunk::SpawnTundra(int X, int Y, FVector SpawnLocation, FRotator Sp
 		if (grassCount % 37 < 1) {
 			AllCubes[0]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Grass->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 	}
 	else if (perlinVAL > -0.2f && perlinVAL <= 0.1f) {//Stone 66% Grass 33%
@@ -463,12 +375,10 @@ void ATerrainChunk::SpawnTundra(int X, int Y, FVector SpawnLocation, FRotator Sp
 		if (stoneCount % 173 < 1) {
 			AllCubes[0]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Grass->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 
 	}
@@ -479,12 +389,10 @@ void ATerrainChunk::SpawnTundra(int X, int Y, FVector SpawnLocation, FRotator Sp
 		if (snowCount % 37 < 1) {
 			AllCubes[4]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Snow->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 	}
 	else if (perlinVAL > 0.3f && perlinVAL <= 0.45f) {//Stone
@@ -494,12 +402,10 @@ void ATerrainChunk::SpawnTundra(int X, int Y, FVector SpawnLocation, FRotator Sp
 		if (stoneCount % 13 < 1) {
 			AllCubes[4]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Snow->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 	}
 	else if (perlinVAL > 0.45f) {//Snow
@@ -509,12 +415,10 @@ void ATerrainChunk::SpawnTundra(int X, int Y, FVector SpawnLocation, FRotator Sp
 		if (snowCount % 113 < 1) {
 			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[4]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Snow->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 
 	}
@@ -524,16 +428,13 @@ void ATerrainChunk::SpawnTundra(int X, int Y, FVector SpawnLocation, FRotator Sp
 		if (stoneCount % 7 <= 2) {
 			AllCubes[0]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Grass->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 	}
 
-	//GEngine->AddOnScreenDebugMessage(-1, 25, FColor::Silver, FString::Printf(TEXT("Initial Block Location is : %s "), *SpawnLocation.ToString()));
 
 }
 
@@ -542,10 +443,15 @@ void ATerrainChunk::SpawnIslands(int X, int Y, FVector SpawnLocation, FRotator S
 	if (perlinVAL <= waterLevel) {//Water
 		AllCubes[5]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
 
-		//Water->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 125 + (offSetHeight * waterLevel))));
 	}
 
+	if (cubeCount % enemySpawnRate == 0) {
+		
+		AMyEnemy* SpawnedEnemy = Cast<AMyEnemy>(GetWorld()->SpawnActor(Enemy.Get()));
 
+
+		SpawnedEnemy->SetActorLocation(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + 700 + (offSetHeight * perlinVAL)));
+	}
 
 	if (perlinVAL <= 0.1f) {//Sand
 		sandCount++;
@@ -553,13 +459,10 @@ void ATerrainChunk::SpawnIslands(int X, int Y, FVector SpawnLocation, FRotator S
 		if (sandCount % 97 <= 1) {
 			AllCubes[2]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			
-			//Sand2->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[1]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Sand->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 	}
 	else if (perlinVAL > 0.1 && perlinVAL <= 0.4) {//Sand 2
@@ -569,14 +472,9 @@ void ATerrainChunk::SpawnIslands(int X, int Y, FVector SpawnLocation, FRotator S
 		if (sandCount2 % 67 <= 1) {
 			AllCubes[1]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Sand->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[2]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
-
-			//Sand2->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
-
 		}
 	}
 	else if (perlinVAL > 0.4 && perlinVAL <= 0.6) {//Grass
@@ -586,12 +484,10 @@ void ATerrainChunk::SpawnIslands(int X, int Y, FVector SpawnLocation, FRotator S
 		if (grassCount % 725 <= 2) {
 			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 		else {
 			AllCubes[0]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Grass->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 	}
 	else if (perlinVAL > 0.6) {//Stone
@@ -602,21 +498,12 @@ void ATerrainChunk::SpawnIslands(int X, int Y, FVector SpawnLocation, FRotator S
 			
 			AllCubes[0]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Grass->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
 		}
 		else {
 			AllCubes[3]->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 
-			//Stone->AddInstanceWorldSpace(FTransform(FVector(SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z + (offSetHeight * perlinVAL))));
 		}
 
 	}
-}
-
-void ATerrainChunk::GenerateChunk()
-{
-
-
-	
 }

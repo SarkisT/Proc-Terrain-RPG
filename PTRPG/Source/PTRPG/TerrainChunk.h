@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "MyGI.h"
+#include "MyEnemy.h"
 #include "Engine/Classes/Components/StaticMeshComponent.h"
 #include "Engine/Classes/Components/InstancedStaticMeshComponent.h"
 #include "TerrainChunk.generated.h"
@@ -33,11 +34,33 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TerrainSize")
 		int Distance;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TerrainSize")
-		int DistanceHeight;
-
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Biome")
 		int biome;
+
+	int enemySpawnRate;
+
+
+	int renderDistance;
+
+	int offSet;
+	int offSetHeight;
+	int offSetZoom;
+
+	float perlinVAL;
+	float waterLevel;
+
+	int cubeCount;
+	int sandCount;
+	int sandCount2;
+	int grassCount;
+	int stoneCount;
+	int snowCount;
+
+	UPROPERTY(VisibleAnywhere, BluePrintReadWrite)
+		int CoordX;
+
+	UPROPERTY(VisibleAnywhere, BluePrintReadWrite)
+		int CoordY;
 
 	UMyGI* GI;
 
@@ -59,52 +82,22 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
 		class UInstancedStaticMeshComponent* Water;
 
+	UPROPERTY(EditAnywhere, Category = "Enemy")
+		TSubclassOf<AMyEnemy> Enemy;
+
+
 	TArray<UActorComponent*> Comps;
 
 	UPROPERTY(VisibleAnywhere, BluePrintReadWrite)
 	FVector playerLoc;
 
-
-
-	int renderDistance;
-
-
-
-
-
+	FActorSpawnParameters spawnParams;
 
 	UPROPERTY(EditAnywhere, Category = "WaterLevel")
 		TSubclassOf<AActor> WaterCollider;
 
+	
 
-
-	//UPROPERTY(EditAnywhere, Category = "TerrainSpawner")
-	//	TSubclassOf<ATerrain> TerrainGenerator;
-
-	int offSet;
-	int offSetHeight;
-	int offSetZoom;
-
-	float perlinVAL;
-	float waterLevel;
-
-	int cubeCount;
-	int sandCount;
-	int sandCount2;
-	int grassCount;
-	int stoneCount;
-	int snowCount;
-
-	UPROPERTY(VisibleAnywhere, BluePrintReadWrite)
-	int CoordX;
-
-	UPROPERTY(VisibleAnywhere, BluePrintReadWrite)
-	int CoordY;
-
-	int N;
-	int E;
-	int W;
-	int S;
 
 	UPROPERTY(VisibleAnywhere, BluePrintReadWrite)
 	FVector InitChunk;
@@ -126,8 +119,6 @@ public:
 	UFUNCTION(BluePrintCallable)
 		void SpawnIslands(int X, int Y, FVector SpawnLocation, FRotator SpawnRotation);
 
-	UFUNCTION(BluePrintCallable)
-		void GenerateChunk();
 
 	UInstancedStaticMeshComponent* CubeInstance;
 

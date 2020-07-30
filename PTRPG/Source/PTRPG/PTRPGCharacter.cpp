@@ -89,6 +89,7 @@ APTRPGCharacter::APTRPGCharacter()
 	VR_MuzzleLocation->SetRelativeLocation(FVector(0.000004, 53.999992, 10.000000));
 	VR_MuzzleLocation->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));		// Counteract the rotation of the VR gun model.
 
+	//Player stats
 	HP = maxHP;
 	MP = maxMP;
 
@@ -107,9 +108,9 @@ void APTRPGCharacter::Tick(float DeltaSeconds)
 
 	//When Healing
 	if (bIsHealing && MP >= 15) {
-		MP -= 15;
+		MP -= (15 - (playerLevel/5));
 		if (HP < maxHP) {
-			HP += 1;
+			HP += 1 + (playerLevel / 3);
 		}
 		if (HP > maxHP) {
 			HP = maxHP;
@@ -118,12 +119,12 @@ void APTRPGCharacter::Tick(float DeltaSeconds)
 
 	//When Speed Buffed
 	if (bSpeedBuffed && MP >= 1) {
-		MP -= 1;
+		MP -= 2;
 	}
 	
 	//Mana Regen
 	if (MP < maxMP) {
-		MP += 1;
+		MP += playerLevel;
 	}
 
 	//Level Up
@@ -133,6 +134,10 @@ void APTRPGCharacter::Tick(float DeltaSeconds)
 
 		GetWorld()->GetTimerManager().SetTimer(LevelUpTimer, this, &APTRPGCharacter::StopLevelUp, 5.0f, false);
 
+		playerLevel++;
+
+		GI->playerLevel = playerLevel;
+
 		XP = 0;
 		maxXP = maxXP * 2;
 
@@ -140,8 +145,7 @@ void APTRPGCharacter::Tick(float DeltaSeconds)
 		HP = maxHP;
 
 		maxMP += 500;
-		MP = maxMP;
-
+		MP = maxMP;	
 	}
 }
 
@@ -149,6 +153,10 @@ void APTRPGCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	GI = Cast<UMyGI>(GetGameInstance());
+
+	GI->playerLevel = playerLevel;
 
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
 	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
@@ -260,24 +268,6 @@ void APTRPGCharacter::OnFire()
 		break;
 	case 2://Speed Buff
 
-		/*
-		if (MP >= 300 && !bSpeedBuffed) {
-
-			MP -= 300;
-
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("SUCCESS")));
-
-			GetCharacterMovement()->MaxWalkSpeed = 10000;
-
-			bSpeedBuffed = true;
-
-			GetWorld()->GetTimerManager().SetTimer(SpeedTimer, this, &APTRPGCharacter::StopSpeed, 10.0f, false);
-		}
-		*/
-
-		break;
-	case 3://Heal
-
 		if (MP >= 15) {
 			bIsHealing = true;
 			bCanRotateAttack = false;
@@ -286,18 +276,6 @@ void APTRPGCharacter::OnFire()
 		break;
 	}
 	
-	/*
-	// try and play a firing animation if specified
-	if (FireAnimation != NULL)
-	{
-		// Get the animation object for the arms mesh
-		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-		if (AnimInstance != NULL)
-		{
-			AnimInstance->Montage_Play(FireAnimation, 1.f);
-		}
-	}
-	*/
 }
 
 void APTRPGCharacter::OnResetVR()
@@ -422,73 +400,37 @@ void APTRPGCharacter::DestroyBlock()
 
 		FHitResult Hit;
 
-		TArray<FHitResult> Hits;
-
-
-
-
 		//GetWorldLocation for component
 		Start = Wand->GetComponentToWorld().GetLocation();
-
-		//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Silver, FString::Printf(TEXT("Initial Block Location is : %s "), *Start.ToString()));
 
 		End = ((FirstPersonCameraComponent->GetForwardVector() * 100000.0f) + Start);
 		FCollisionQueryParams TraceParams;
 
 		TraceParams.AddIgnoredActor(this);
 
-
-		//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Silver, FString::Printf(TEXT("Initial Block Location is : %s "), *End.ToString()));
-
-		//Channel2 is the CustomOverlap Trace, (Overlaps All)
-		//bool bHit = GetWorld()->LineTraceMultiByChannel(Hits, Start, End, ECC_GameTraceChannel2, TraceParams);
-
-
-		bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
-
-		//GetWorld().linetrac
+		bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Camera, TraceParams);
 
 		FTransform InstanceTransform;
-
-
-		/*
-		if (bHit) {
-
-			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("SUCCESS")));
-
-			for (FHitResult h : Hits) {
-				auto tempComponent = Cast<UInstancedStaticMeshComponent>(h.Component);
-
-				auto tempTransform = tempComponent->GetInstanceTransform(h.Item, InstanceTransform, false);
-
-				//tempComponent->AddInstance(FTransform(FVector(InstanceTransform.GetLocation().X, InstanceTransform.GetLocation().Y, InstanceTransform.GetLocation().Z - 250.0f)));
-
-				tempComponent->RemoveInstance(h.Item);
-
-			}
-
-		}
-		*/
-
 
 		if (bHit) {
 			
 			if (UInstancedStaticMeshComponent* tempComponent = Cast<UInstancedStaticMeshComponent>(Hit.Component)) {
 				tempComponent = Cast<UInstancedStaticMeshComponent>(Hit.Component);
 
-				GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, FString::Printf(TEXT("ye")));
-
 				if (tempComponent != nullptr || tempComponent != NULL) {
 					auto tempTransform = tempComponent->GetInstanceTransform(Hit.Item, InstanceTransform, false);
-
-					//tempComponent->AddInstance(FTransform(FVector(InstanceTransform.GetLocation().X, InstanceTransform.GetLocation().Y, InstanceTransform.GetLocation().Z - 250.0f)));
 
 					tempComponent->RemoveInstance(Hit.Item);
 				}
 			}
-		}
-	
+			else if (AMyEnemy* tempEnemy = Cast<AMyEnemy>(Hit.Actor)) {
 
+				if (tempEnemy != nullptr || tempEnemy != NULL) {
+					
+					tempEnemy->HP -= (1 + playerLevel);			
+				}
+			}	
+		}
 	}
 	else {
 		bLaser = false;
@@ -500,7 +442,7 @@ void APTRPGCharacter::DestroyBlock()
 void APTRPGCharacter::ChangeAttack()
 {
 	if (bCanRotateAttack) {
-		if (AttackIndex > 4) {
+		if (AttackIndex >= 2) {
 			AttackIndex = 0;
 		}
 		else {
@@ -521,8 +463,6 @@ void APTRPGCharacter::StopSpeed()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 2500;
 	bSpeedBuffed = false;
-
-
 }
 
 void APTRPGCharacter::Sprint()

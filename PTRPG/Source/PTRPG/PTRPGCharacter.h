@@ -6,6 +6,8 @@
 #include "Engine/Classes/Components/StaticMeshComponent.h"
 #include "Engine/Classes/Components/InstancedStaticMeshComponent.h"
 #include "GameFramework/Character.h"
+#include "MyGI.h"
+#include "MyEnemy.h"
 #include "PTRPGCharacter.generated.h"
 
 class UInputComponent;
@@ -45,6 +47,8 @@ class APTRPGCharacter : public ACharacter
 	FVector End;
 
 	FTimerHandle LevelUpTimer;
+
+	UMyGI* GI;
 
 public:
 	APTRPGCharacter();
@@ -120,7 +124,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int maxXP = 10;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int playerLevel;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables") int playerLevel = 1;
 
 
 protected:
